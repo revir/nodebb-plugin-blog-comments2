@@ -23,5 +23,7 @@
 		"css": "public/css",
 		"lib": "public/lib"
 	},
+	"languages": "languages",
+	"defaultLang": "en",
 	"templates": "public/templates"
 }
