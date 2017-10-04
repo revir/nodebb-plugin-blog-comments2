@@ -244,13 +244,17 @@
 }
 
 /*add for reply and quota*/
-#nodebb .sub-reply-input {
+#nodebb .sub-reply-input, #nodebb .edit-input {
   margin-bottom: 20px;
   position: relative;
   padding-right: 146px;
 }
 
-#nodebb .sub-reply-input .btn.btn-primary {
+#nodebb .edit-input {
+  padding-right: 155px;
+}
+
+#nodebb .sub-reply-input .btn.btn-primary, #nodebb .edit-input .btn.btn-primary  {
   right: 0;
   top: 0;
   margin-top: 0;

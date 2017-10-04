@@ -258,6 +258,15 @@ var blogComments2Common = function (commentPositionDiv, nbb, kwargs) {
 
         });
 
+        bindOnClick(nodebbDiv.querySelectorAll('[component="post/edit"]'), function (e) {
+          var topicItem = getTopicItem(event.target);
+          var form = topicItem.querySelector('.edit-input');
+          var textarea = topicItem.querySelector('#edit-content');
+          textarea.value = textarea.value.replace('<p>', '').replace('</p>', '');
+          form.classList.remove('hidden');
+        });
+
+
         bindOnClick(nodebbDiv.querySelectorAll('[component="post/flag"]'), function (event) {
           var topicItem = getTopicItem(event.target);
           var pid = topicItem.getAttribute('data-pid');

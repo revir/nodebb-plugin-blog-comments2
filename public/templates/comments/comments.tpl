@@ -32,6 +32,7 @@
 
         <form action="{relative_path}/comments/reply" class="clearfix" method="post">
             <textarea id="nodebb-content" class="form-control" name="content" placeholder="Join the conversation" rows="1"></textarea>
+            <strong id="nodebb-error"></strong>
         <!-- IF isLoggedIn -->
             <button class="btn btn-primary">Post a Reply</button>
             <input type="hidden" name="_csrf" value="{token}" />
@@ -80,7 +81,7 @@
                                         </li>
                                         <!-- ELSE -->
                                         <li>
-                                            <a component="post/purge">
+                                            <a component="post/edit">
                                                 Edit
                                             </a>
                                         </li>
@@ -131,6 +132,15 @@
                         </div>
                     </div>
                 </div>
+
+                <form action="{relative_path}/comments/edit" method="post" class="edit-input hidden">
+                    <textarea id="edit-content" class="form-control" name="content" placeholder="Edit comment" rows="1">{posts.content}</textarea>
+                    <button class="btn btn-primary">Save changes</button>
+                    <input type="hidden" name="_csrf" value="{token}" />
+                    <input type="hidden" name="tid" value="{tid}" />
+                    <input type="hidden" name="pid" value="{posts.pid}" />
+                    <input type="hidden" name="url" value="{redirect_url}" />
+                </form>
 
                 <form action="{relative_path}/comments/reply" method="post" class="sub-reply-input hidden">
                     <textarea id="nodebb-content" class="form-control" name="content" placeholder="Join the conversation" rows="1"></textarea>

@@ -175,6 +175,26 @@
 		});
 	};
 
+	Comments.editPost = function (req, res, callback) {
+		if (!CORSSafeReq(req)) {
+			return;
+		}
+		var uid = req.user ? req.user.uid : 0;
+		var url = req.body.url;
+
+		var data = {
+			uid: uid,
+			pid: req.body.pid,
+			content: req.body.content,
+			req: req
+		};
+
+		posts.edit(data, function(err, result) {
+			CORSFilter(req, res);
+			res.redirect(get_redirect_url(url, err));
+		});
+	};
+
 	Comments.replyToComment = function(req, res, callback) {
 		var content = req.body.content,
 			tid = req.body.tid,
@@ -318,6 +338,7 @@
 		app.post('/comments/publish', Comments.publishArticle);
 		app.post('/comments/vote', Comments.votePost);
 		app.post('/comments/bookmark', Comments.bookmarkPost);
+		app.post('/comments/edit', Comments.editPost);
 
 		app.get('/admin/blog-comments', middleware.admin.buildHeader, renderAdmin);
 		app.get('/api/admin/blog-comments', renderAdmin);
