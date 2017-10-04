@@ -192,9 +192,18 @@
   color: #FFF;
   float: right;
   text-transform: uppercase;
+}
+
+#nodebb form .btn.btn-primary {
   position: absolute;
   right: 18px;
   top: 19px;
+}
+
+#nodebb .login-info {
+  line-height: 41px;
+  color: rgba(0, 0, 0, 0.62);
+  font-size: 12px
 }
 
 #nodebb-load-more {

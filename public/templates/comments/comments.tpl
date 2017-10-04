@@ -17,38 +17,30 @@
         </a>
     </div>
     <!-- IF atTop -->
-        <div class="topic-profile-pic user first-image">
-
-            <!-- IF !isLoggedIn -->
-                <img src="https://1.gravatar.com/avatar/177d180983be7a2c95a4dbe7451abeba?s=95&d=&r=PG" class="profile-image" />
-            <!-- ELSE -->
+        <!-- IF !isLoggedIn -->
+            <span class="login-info">[[plugin:loginToAdd]]</span>
+            <button class="btn btn-primary" id="nodebb-register">[[plugin:register]]</button>
+            <button class="btn btn-primary" id="nodebb-login">[[plugin:login]]</button>
+        <!-- ELSE -->
+            <div class="topic-profile-pic user first-image">
                 <!-- IF user.picture -->
                 <img data-uid="{user.uid}" src="{user.picture}" class="profile-image" title="{user.username}" />
                 <!-- ELSE -->
                 <div class="profile-image" style="background-color: {user.icon:bgColor};" title="{user.username}">{user.icon:text}</div>
                 <!-- ENDIF user.picture -->
-            <!-- ENDIF !isLoggedIn -->
-        </div>
+            </div>
 
-        <form action="{relative_path}/comments/reply" class="clearfix" method="post">
-            <textarea id="nodebb-content" class="form-control" name="content" placeholder="Join the conversation" rows="1"></textarea>
-            <strong id="nodebb-error"></strong>
-        <!-- IF isLoggedIn -->
-            <button class="btn btn-primary">Post a Reply</button>
-            <input type="hidden" name="_csrf" value="{token}" />
-            <input type="hidden" name="tid" value="{tid}" />
-            <input type="hidden" name="url" value="{redirect_url}" />
-        </form>
-        <br />
-        <!-- ELSE -->
-        </form>
-        <button class="btn btn-primary" id="nodebb-register">Register</button>
-        <button class="btn btn-primary" id="nodebb-login">Login</button>
+            <form action="{relative_path}/comments/reply" class="clearfix" method="post">
+                <textarea id="nodebb-content" class="form-control" name="content" placeholder="[[plugin:addComment]]" rows="1"></textarea>
+                <strong id="nodebb-error"></strong>
+                <button class="btn btn-primary">[[plugin:postReply]]</button>
+                <input type="hidden" name="_csrf" value="{token}" />
+                <input type="hidden" name="tid" value="{tid}" />
+                <input type="hidden" name="url" value="{redirect_url}" />
+            </form>
+            <br />
+        <!-- ENDIF !isLoggedIn -->
 
-        <!-- This button is here just for making the css margin right -->
-        <button style="visibility: hidden; padding-top: 8px;"> </button>
-
-        <!-- ENDIF isLoggedIn -->
     <!-- ENDIF atTop -->
 
     <ul id="nodebb-comments-list" data-mainpid="{mainPost.pid}">
@@ -127,14 +119,23 @@
                             <br />
                             <div class="post-body">{posts.content}</div>
                             <a href class="reply-button" component="post/reply">
-                                Reply
+                                [[plugin:reply]]
                             </a>
                         </div>
                     </div>
                 </div>
 
+                <form action="{relative_path}/comments/reply" method="post" class="sub-reply-input hidden">
+                    <textarea id="nodebb-content" class="form-control" name="content" placeholder="[[plugin:addComment]]" rows="1"></textarea>
+                    <button class="btn btn-primary">[[plugin:postReply]]</button>
+                    <input type="hidden" name="_csrf" value="{token}" />
+                    <input type="hidden" name="tid" value="{tid}" />
+                    <input type="hidden" name="toPid" value="{posts.pid}" />
+                    <input type="hidden" name="url" value="{redirect_url}" />
+                </form>
+
                 <form action="{relative_path}/comments/edit" method="post" class="edit-input hidden">
-                    <textarea id="edit-content" class="form-control" name="content" placeholder="Edit comment" rows="1">{posts.content}</textarea>
+                    <textarea id="edit-content" class="form-control" name="content" placeholder="[[plugin:editComment]]" rows="1">{posts.content}</textarea>
                     <button class="btn btn-primary">Save changes</button>
                     <input type="hidden" name="_csrf" value="{token}" />
                     <input type="hidden" name="tid" value="{tid}" />
@@ -142,14 +143,6 @@
                     <input type="hidden" name="url" value="{redirect_url}" />
                 </form>
 
-                <form action="{relative_path}/comments/reply" method="post" class="sub-reply-input hidden">
-                    <textarea id="nodebb-content" class="form-control" name="content" placeholder="Join the conversation" rows="1"></textarea>
-                    <button class="btn btn-primary">Post a reply</button>
-                    <input type="hidden" name="_csrf" value="{token}" />
-                    <input type="hidden" name="tid" value="{tid}" />
-                    <input type="hidden" name="toPid" value="{posts.pid}" />
-                    <input type="hidden" name="url" value="{redirect_url}" />
-                </form>
             </div>
         </li>
         <!-- END posts -->
@@ -164,18 +157,18 @@
             <!-- ENDIF isLoggedIn -->
         </div>
         <form action="{relative_path}/comments/reply" method="post">
-            <textarea id="nodebb-content" class="form-control" name="content" placeholder="Join the conversation" rows="3"></textarea>
+            <textarea id="nodebb-content" class="form-control" name="content" placeholder="[[plugin:addComment]]" rows="3"></textarea>
         <!-- IF isLoggedIn -->
             <small>Signed in as <strong>{user.username}</strong>. <strong id="nodebb-error"></strong></small>
-            <button class="btn btn-primary">Post a Reply</button>
+            <button class="btn btn-primary">[[plugin:postReply]]</button>
             <input type="hidden" name="_csrf" value="{token}" />
             <input type="hidden" name="tid" value="{tid}" />
             <input type="hidden" name="url" value="{redirect_url}" />
         </form>
         <!-- ELSE -->
         </form>
-        <button class="btn btn-primary" id="nodebb-register">Register</button>
-        <button class="btn btn-primary" id="nodebb-login">Login</button>
+        <button class="btn btn-primary" id="nodebb-register">[[plugin:register]]</button>
+        <button class="btn btn-primary" id="nodebb-login">[[plugin:login]]</button>
 
         <!-- This button is here just for making the css margin right -->
         <button style="visibility: hidden; padding-top: 8px;"> </button>

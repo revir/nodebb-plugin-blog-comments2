@@ -68,9 +68,18 @@ var blogComments2Common = function (commentPositionDiv, nbb, kwargs) {
       .replace(/src="\/(?=\w)/g, 'src="' + nbb.url + '/');
   }
 
+  function translate(template, callback) {
+    require(['translator'], function(translator) {
+      translator.translate(template, function(translated) {
+        callback(translated);
+      });
+    });
+  }
+
+
   function getTopicItem(el) {
     while (el && !el.classList.contains('topic-item')) {
-        el = el.parentElement;
+      el = el.parentElement;
     }
     return el;
   }
@@ -148,239 +157,248 @@ var blogComments2Common = function (commentPositionDiv, nbb, kwargs) {
 
       if (pagination) {
         html = normalizePost(parse(data, templates.blocks['posts']));
-        commentsDiv.innerHTML = commentsDiv.innerHTML + html;
+        translate(html, function(translated){
+          commentsDiv.innerHTML = commentsDiv.innerHTML + translated;
+          setupContent(data);
+        });
+
       } else {
         html = parse(data, data.template);
-        nodebbDiv.innerHTML = normalizePost(html);
+        translate(html, function(translated){
+          nodebbDiv.innerHTML = normalizePost(translated);
 
-        if (data.mainPost) {
-          mainPost=data.mainPost;
-          onUpvoted(nodebbDiv.querySelector('.top-tool-box'), mainPost.upvoted, mainPost.votes);
-          onBookmarked(nodebbDiv.querySelector('.top-tool-box'), mainPost.bookmarked);
+          if (data.mainPost) {
+            mainPost=data.mainPost;
+            onUpvoted(nodebbDiv.querySelector('.top-tool-box'), mainPost.upvoted, mainPost.votes);
+            onBookmarked(nodebbDiv.querySelector('.top-tool-box'), mainPost.bookmarked);
 
-          nbb.loadScript(nbb.url + '/plugins/nodebb-plugin-blog-comments2/lib/needsharebutton.js', function () {
-            new needShareDropdown(nodebbDiv.querySelector('.top-tool-box .need-more-share2'));
-
-          });
-
-        }
-      }
-
-      contentDiv = document.getElementById('nodebb-content');
-
-      setTimeout(function() {
-        var lists = nodebbDiv.getElementsByTagName("li");
-        for (var list in lists) {
-          if (lists.hasOwnProperty(list)) {
-            lists[list].className = '';
-          }
-        }
-      }, 100);
-
-      if (savedText) {
-        contentDiv.value = savedText;
-      }
-
-      if (data.isValid) {
-        var loadMore = document.getElementById('nodebb-load-more');
-        loadMore.onclick = function() {
-          pagination++;
-          reloadComments();
-        }
-        if (data.posts.length) {
-          loadMore.style.display = 'inline-block';
-        }
-
-        if (pagination * 10 + data.posts.length + 1 >= data.postCount) {
-          loadMore.style.display = 'none';
-        }
-
-        if (typeof jQuery !== 'undefined' && jQuery() && jQuery().fitVids) {
-          jQuery(nodebbDiv).fitVids();
-        }
-
-        if (data.user && data.user.uid) {
-          var error = window.location.href.match(/error=[\S]*/);
-          if (error) {
-            if (error[0].indexOf('too-many-posts') !== -1) {
-              error = 'Please wait before posting so soon.';
-            } else if (error[0].indexOf('content-too-short') !== -1) {
-              error = 'Please post a longer reply.';
-            }
-
-            document.getElementById('nodebb-error').innerHTML = error;
-          }
-        } else {
-          document.getElementById('nodebb-register').onclick = function() {
-            authenticate('register');
-          };
-
-          document.getElementById('nodebb-login').onclick = function() {
-            authenticate('login');
-          }
-        }
-
-        var bindOnClick = function(nodeList, handler) {
-          for (var i = nodeList.length - 1; i >= 0; i--) {
-            nodeList[i].onclick = handler;
-          }
-        };
-
-        var isInViewport = function(element) {
-          var rect = element.getBoundingClientRect();
-          return (
-            rect.top >= 0 && rect.left >= 0 &&
-            rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
-            rect.right <= (window.innerWidth || document.documentElement.clientWidth)
-          );
-        };
-
-        var nodebbCommentsList = nodebbDiv.querySelector('#nodebb-comments-list');
-        bindOnClick(nodebbCommentsList.querySelectorAll('[component="post/parent"]'), function(event) {
-          var element = event.target;
-          var goTo = nodebbCommentsList.querySelector('.topic-item[data-pid="' + element.getAttribute('data-topid') + '"]');
-
-          if (!goTo) {
-            goTo = nodebbDiv.querySelector('#nodebb-load-more');
-          }
-
-          if (!isInViewport(goTo)) {
-            goTo.scrollIntoView(false);
-          }
-
-          goTo.classList.add('highlight');
-          element.classList.add('highlight');
-
-          setTimeout(function() {
-            goTo.classList.remove('highlight');
-            element.classList.remove('highlight');
-          }, 1000);
-
-        });
-
-        bindOnClick(nodebbDiv.querySelectorAll('[component="post/edit"]'), function (e) {
-          var topicItem = getTopicItem(event.target);
-          var form = topicItem.querySelector('.edit-input');
-          var textarea = topicItem.querySelector('#edit-content');
-          textarea.value = textarea.value.replace('<p>', '').replace('</p>', '');
-          form.classList.remove('hidden');
-        });
-
-
-        bindOnClick(nodebbDiv.querySelectorAll('[component="post/flag"]'), function (event) {
-          var topicItem = getTopicItem(event.target);
-          var pid = topicItem.getAttribute('data-pid');
-
-          require(['flags'], function (flags) {
-            flags.showFlagModal({
-              type: 'post',
-              id: pid,
+            nbb.loadScript(nbb.url + '/plugins/nodebb-plugin-blog-comments2/lib/needsharebutton.js', function () {
+              new needShareDropdown(nodebbDiv.querySelector('.top-tool-box .need-more-share2'));
             });
-          });
+          }
+
+          setupContent(data);
         });
 
-        bindOnClick(nodebbDiv.querySelectorAll('[component="post/purge"]'), function (event) {
-          var topicItem = getTopicItem(event.target);
-          var pid = topicItem.getAttribute('data-pid');
 
-          require(['translator'], function(translator) {
-            translator.translate('[[topic:post_delete_confirm]]', function (msg) {
-              bootbox.confirm(msg, function (confirm) {
-                if (!confirm) {
-                  return;
-                }
-
-                socket.emit('posts.purge', {
-                  pid: pid
-                }, function (err) {
-                  if (err) {
-                    app.alertError(err.message);
-                  } else {
-                    var parent = topicItem.parentNode;
-                    parent.parentNode.removeChild(parent);
-                  }
-                });
-              });
-            });
-          });
-        });
-
-        bindOnClick(nodebbDiv.querySelectorAll('[component="post/reply"],[component="post/quote"],[component="post/bookmark"],[component="post/upvote"]'), function(event) {
-          if (!data.user || !data.user.uid) {
-            authenticate('login');
-            return;
-          }
-
-          var topicItem = getTopicItem(event.target);
-          var bookmarked = JSON.parse(this.getAttribute('data-bookmarked'));
-          var upvoted = JSON.parse(this.getAttribute('data-upvoted'));
-
-          if (topicItem) {
-            var elementForm = topicItem.querySelector('form');
-            var visibleForm = nodebbCommentsList.querySelector('li .topic-item form:not(.hidden)');
-            var formInput = elementForm.querySelector('textarea');
-            var pid = topicItem.getAttribute('data-pid');
-            var uid = topicItem.getAttribute('data-uid');
-
-            if (visibleForm && visibleForm !== elementForm) {
-              visibleForm.classList.add('hidden');
-            }
-
-            if (/\/quote$/.test(this.getAttribute('component'))) {
-              var postBody = topicItem.querySelector('.post-content .post-body');
-              var quote = (postBody.innerText ? postBody.innerText : postBody.textContent).split('\n').map(function(line) { return line ? '> ' + line : line; }).join('\n');
-              formInput.value = '@' + topicItem.getAttribute('data-userslug') + ' said:\n' + quote + formInput.value;
-              elementForm.classList.remove('hidden');
-            } else if (/\/reply$/.test(this.getAttribute('component'))) {
-              formInput.value = '@' + topicItem.getAttribute('data-userslug') + ': ' + formInput.value;
-              elementForm.classList.remove('hidden');
-            } else if (/\/upvote$/.test(this.getAttribute('component'))) {
-              if(data.user.uid != uid) {
-                upvotePost(topicItem, pid, upvoted);
-              }
-            } else if (/\/bookmark$/.test(this.getAttribute('component'))) {
-              bookmarkPost(topicItem, pid, bookmarked);
-            }
-          } else {
-
-            if (/\/upvote$/.test(this.getAttribute('component'))) {
-              if(data.user.uid != mainPost.uid) {
-                upvotePost(nodebbDiv.querySelector('.top-tool-box'), mainPost.pid, upvoted);
-              }
-            } else if (/\/bookmark$/.test(this.getAttribute('component'))) {
-              bookmarkPost(nodebbDiv.querySelector('.top-tool-box'), mainPost.pid, bookmarked);
-            }
-          }
-
-        });
-
-      } else {
-        if (data.isAdmin) {
-          var markdown, articleTitle;
-          if (nbb.articleContent) {
-            markdown = nbb.articleContent + '\n\n**Click [here]('+articlePath+') to see the full blog post**';
-          } else {
-            markdown = document.getElementById('nbb-markdown').innerText;
-            markdown = markdown.split('\n\n').slice(0,2).join('\n\n') + '\n\n**Click [here]('+articlePath+') to see the full blog post**';
-          }
-
-          if (nbb.articleTitle) {
-            articleTitle = nbb.articleTitle;
-          } else {
-            var telement = document.getElementById('nbb-title');
-            articleTitle = telement ? telement.innerText : document.title;
-          }
-
-          document.getElementById('nodebb-content-title').value = articleTitle;
-          document.getElementById('nodebb-content-markdown').value = markdown;
-          document.getElementById('nodebb-content-cid').value = nbb.cid || -1;
-          document.getElementById('nodebb-content-blogger').value = nbb.blogger;
-          document.getElementById('nodebb-content-tags').value = JSON.stringify(nbb.tags || '');
-        }
       }
     }
   };
 
+  function setupContent(data){
+    contentDiv = document.getElementById('nodebb-content');
+
+    setTimeout(function() {
+      var lists = nodebbDiv.getElementsByTagName("li");
+      for (var list in lists) {
+        if (lists.hasOwnProperty(list)) {
+          lists[list].className = '';
+        }
+      }
+    }, 100);
+
+    if (savedText) {
+      contentDiv.value = savedText;
+    }
+
+    if (data.isValid) {
+      var loadMore = document.getElementById('nodebb-load-more');
+      loadMore.onclick = function() {
+        pagination++;
+        reloadComments();
+      }
+      if (data.posts.length) {
+        loadMore.style.display = 'inline-block';
+      }
+
+      if (pagination * 10 + data.posts.length + 1 >= data.postCount) {
+        loadMore.style.display = 'none';
+      }
+
+      if (typeof jQuery !== 'undefined' && jQuery() && jQuery().fitVids) {
+        jQuery(nodebbDiv).fitVids();
+      }
+
+      if (data.user && data.user.uid) {
+        var error = window.location.href.match(/error=[\S]*/);
+        if (error) {
+          if (error[0].indexOf('too-many-posts') !== -1) {
+            error = 'Please wait before posting so soon.';
+          } else if (error[0].indexOf('content-too-short') !== -1) {
+            error = 'Please post a longer reply.';
+          }
+
+          document.getElementById('nodebb-error').innerHTML = error;
+        }
+      } else {
+        document.getElementById('nodebb-register').onclick = function() {
+          authenticate('register');
+        };
+
+        document.getElementById('nodebb-login').onclick = function() {
+          authenticate('login');
+        }
+      }
+
+      var bindOnClick = function(nodeList, handler) {
+        for (var i = nodeList.length - 1; i >= 0; i--) {
+          nodeList[i].onclick = handler;
+        }
+      };
+
+      var isInViewport = function(element) {
+        var rect = element.getBoundingClientRect();
+        return (
+          rect.top >= 0 && rect.left >= 0 &&
+          rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
+          rect.right <= (window.innerWidth || document.documentElement.clientWidth)
+        );
+      };
+
+      var nodebbCommentsList = nodebbDiv.querySelector('#nodebb-comments-list');
+      bindOnClick(nodebbCommentsList.querySelectorAll('[component="post/parent"]'), function(event) {
+        var element = event.target;
+        var goTo = nodebbCommentsList.querySelector('.topic-item[data-pid="' + element.getAttribute('data-topid') + '"]');
+
+        if (!goTo) {
+          goTo = nodebbDiv.querySelector('#nodebb-load-more');
+        }
+
+        if (!isInViewport(goTo)) {
+          goTo.scrollIntoView(false);
+        }
+
+        goTo.classList.add('highlight');
+        element.classList.add('highlight');
+
+        setTimeout(function() {
+          goTo.classList.remove('highlight');
+          element.classList.remove('highlight');
+        }, 1000);
+
+      });
+
+      bindOnClick(nodebbDiv.querySelectorAll('[component="post/edit"]'), function (e) {
+        var topicItem = getTopicItem(event.target);
+        var form = topicItem.querySelector('.edit-input');
+        var textarea = topicItem.querySelector('#edit-content');
+        // strip HTML tags from comment text
+        textarea.value = textarea.value.replace(/<\/?[^>]+(>|$)/g, "");
+        form.classList.remove('hidden');
+      });
+
+      bindOnClick(nodebbDiv.querySelectorAll('[component="post/flag"]'), function (event) {
+        var topicItem = getTopicItem(event.target);
+        var pid = topicItem.getAttribute('data-pid');
+
+        require(['flags'], function (flags) {
+          flags.showFlagModal({
+            type: 'post',
+            id: pid,
+          });
+        });
+      });
+
+      bindOnClick(nodebbDiv.querySelectorAll('[component="post/purge"]'), function (event) {
+        var topicItem = getTopicItem(event.target);
+        var pid = topicItem.getAttribute('data-pid');
+
+        require(['translator'], function(translator) {
+          translator.translate('[[topic:post_delete_confirm]]', function (msg) {
+            bootbox.confirm(msg, function (confirm) {
+              if (!confirm) {
+                return;
+              }
+
+              socket.emit('posts.purge', {
+                pid: pid
+              }, function (err) {
+                if (err) {
+                  app.alertError(err.message);
+                } else {
+                  var parent = topicItem.parentNode;
+                  parent.parentNode.removeChild(parent);
+                }
+              });
+            });
+          });
+        });
+      });
+
+      bindOnClick(nodebbDiv.querySelectorAll('[component="post/reply"],[component="post/quote"],[component="post/bookmark"],[component="post/upvote"]'), function(event) {
+        if (!data.user || !data.user.uid) {
+          authenticate('login');
+          return;
+        }
+
+        var topicItem = getTopicItem(event.target);
+        var bookmarked = JSON.parse(this.getAttribute('data-bookmarked'));
+        var upvoted = JSON.parse(this.getAttribute('data-upvoted'));
+
+        if (topicItem) {
+          var elementForm = topicItem.querySelector('form');
+          var visibleForm = nodebbCommentsList.querySelector('li .topic-item form:not(.hidden)');
+          var formInput = elementForm.querySelector('textarea');
+          var pid = topicItem.getAttribute('data-pid');
+          var uid = topicItem.getAttribute('data-uid');
+
+          if (visibleForm && visibleForm !== elementForm) {
+            visibleForm.classList.add('hidden');
+          }
+
+          if (/\/quote$/.test(this.getAttribute('component'))) {
+            var postBody = topicItem.querySelector('.post-content .post-body');
+            var quote = (postBody.innerText ? postBody.innerText : postBody.textContent).split('\n').map(function(line) { return line ? '> ' + line : line; }).join('\n');
+            formInput.value = '@' + topicItem.getAttribute('data-userslug') + ' said:\n' + quote + formInput.value;
+            elementForm.classList.remove('hidden');
+          } else if (/\/reply$/.test(this.getAttribute('component'))) {
+            formInput.value = '@' + topicItem.getAttribute('data-userslug') + ': ' + formInput.value;
+            elementForm.classList.remove('hidden');
+          } else if (/\/upvote$/.test(this.getAttribute('component'))) {
+            if(data.user.uid != uid) {
+              upvotePost(topicItem, pid, upvoted);
+            }
+          } else if (/\/bookmark$/.test(this.getAttribute('component'))) {
+            bookmarkPost(topicItem, pid, bookmarked);
+          }
+        } else {
+
+          if (/\/upvote$/.test(this.getAttribute('component'))) {
+            if(data.user.uid != mainPost.uid) {
+              upvotePost(nodebbDiv.querySelector('.top-tool-box'), mainPost.pid, upvoted);
+            }
+          } else if (/\/bookmark$/.test(this.getAttribute('component'))) {
+            bookmarkPost(nodebbDiv.querySelector('.top-tool-box'), mainPost.pid, bookmarked);
+          }
+        }
+
+      });
+
+    } else {
+      if (data.isAdmin) {
+        var markdown, articleTitle;
+        if (nbb.articleContent) {
+          markdown = nbb.articleContent + '\n\n**Click [here]('+articlePath+') to see the full blog post**';
+        } else {
+          markdown = document.getElementById('nbb-markdown').innerText;
+          markdown = markdown.split('\n\n').slice(0,2).join('\n\n') + '\n\n**Click [here]('+articlePath+') to see the full blog post**';
+        }
+
+        if (nbb.articleTitle) {
+          articleTitle = nbb.articleTitle;
+        } else {
+          var telement = document.getElementById('nbb-title');
+          articleTitle = telement ? telement.innerText : document.title;
+        }
+
+        document.getElementById('nodebb-content-title').value = articleTitle;
+        document.getElementById('nodebb-content-markdown').value = markdown;
+        document.getElementById('nodebb-content-cid').value = nbb.cid || -1;
+        document.getElementById('nodebb-content-blogger').value = nbb.blogger;
+        document.getElementById('nodebb-content-tags').value = JSON.stringify(nbb.tags || '');
+      }
+    }
+  }
   function onUpvoted (topicItem, isUpvote, votes) {
     var el = topicItem.querySelector('.i-upvote');
     var link = topicItem.querySelector('[component="post/upvote"]');
