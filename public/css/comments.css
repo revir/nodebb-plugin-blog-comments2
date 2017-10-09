@@ -374,3 +374,32 @@
   text-transform: uppercase;
   float: right;
 }
+
+@media (max-width: 767px) {
+  #nodebb {
+    margin: 0 -12px;
+    padding-left: 12px;
+    padding-right: 12px;
+  }
+
+  #nodebb > form {
+    margin-right: 6px;
+    margin-bottom: 32px;
+  }
+
+  #nodebb .sub-reply-input, #nodebb .edit-input {
+    padding-right: 0;
+  }
+
+  #nodebb form .btn.btn-primary {
+    top: 72px;
+  }
+
+  #nodebb .sub-reply-input .btn.btn-primary, #nodebb .edit-input .btn.btn-primary {
+    top: 53px;
+  }
+
+  #nodebb .sub-reply-input, #nodebb .edit-input {
+    margin-bottom: 65px;
+  }
+}
