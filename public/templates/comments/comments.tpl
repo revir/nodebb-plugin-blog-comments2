@@ -16,32 +16,29 @@
             </span>
         </a>
     </div>
-    <!-- IF atTop -->
-        <!-- IF !isLoggedIn -->
-            <span class="login-info">[[plugin:loginToAdd]]</span>
-            <button class="btn btn-primary" id="nodebb-register">[[plugin:register]]</button>
-            <button class="btn btn-primary" id="nodebb-login">[[plugin:login]]</button>
-        <!-- ELSE -->
-            <div class="topic-profile-pic user first-image">
-                <!-- IF user.picture -->
-                <img data-uid="{user.uid}" src="{user.picture}" class="profile-image" title="{user.username}" />
-                <!-- ELSE -->
-                <div class="profile-image" style="background-color: {user.icon:bgColor};" title="{user.username}">{user.icon:text}</div>
-                <!-- ENDIF user.picture -->
-            </div>
+    <!-- IF !isLoggedIn -->
+        <span class="login-info">[[plugin:loginToAdd]]</span>
+        <button class="btn btn-primary" id="nodebb-register">[[plugin:register]]</button>
+        <button class="btn btn-primary" id="nodebb-login">[[plugin:login]]</button>
+    <!-- ELSE -->
+        <div class="topic-profile-pic user first-image">
+            <!-- IF user.picture -->
+            <img data-uid="{user.uid}" src="{user.picture}" class="profile-image" title="{user.username}" />
+            <!-- ELSE -->
+            <div class="profile-image" style="background-color: {user.icon:bgColor};" title="{user.username}">{user.icon:text}</div>
+            <!-- ENDIF user.picture -->
+        </div>
 
-            <form action="{relative_path}/comments/reply" class="clearfix" method="post">
-                <textarea id="nodebb-content" class="form-control" name="content" placeholder="[[plugin:addComment]]" rows="1"></textarea>
-                <strong id="nodebb-error"></strong>
-                <button class="btn btn-primary">[[plugin:postReply]]</button>
-                <input type="hidden" name="_csrf" value="{token}" />
-                <input type="hidden" name="tid" value="{tid}" />
-                <input type="hidden" name="url" value="{redirect_url}" />
-            </form>
-            <br />
-        <!-- ENDIF !isLoggedIn -->
-
-    <!-- ENDIF atTop -->
+        <form action="{relative_path}/comments/reply" class="clearfix" method="post">
+            <textarea id="nodebb-content" class="form-control" name="content" placeholder="[[plugin:addComment]]" rows="1"></textarea>
+            <strong id="nodebb-error"></strong>
+            <button class="btn btn-primary" disabled="disabled">[[plugin:postReply]]</button>
+            <input type="hidden" name="_csrf" value="{token}" />
+            <input type="hidden" name="tid" value="{tid}" />
+            <input type="hidden" name="url" value="{redirect_url}" />
+        </form>
+        <br />
+    <!-- ENDIF !isLoggedIn -->
 
     <ul id="nodebb-comments-list" data-mainpid="{mainPost.pid}">
         <!-- BEGIN posts -->
@@ -127,7 +124,7 @@
 
                 <form action="{relative_path}/comments/reply" method="post" class="sub-reply-input hidden">
                     <textarea id="nodebb-content" class="form-control" name="content" placeholder="[[plugin:addComment]]" rows="1"></textarea>
-                    <button class="btn btn-primary">[[plugin:postReply]]</button>
+                    <button class="btn btn-primary" disabled="disabled">[[plugin:postReply]]</button>
                     <input type="hidden" name="_csrf" value="{token}" />
                     <input type="hidden" name="tid" value="{tid}" />
                     <input type="hidden" name="toPid" value="{posts.pid}" />
@@ -148,48 +145,5 @@
         <!-- END posts -->
     </ul>
 
-    <!-- IF atBottom -->
-        <div class="topic-profile-pic user">
-            <!-- IF isLoggedIn -->
-            <img src="{user.picture}" class="profile-image" />
-            <!-- ELSE -->
-            <img src="http://1.gravatar.com/avatar/177d180983be7a2c95a4dbe7451abeba?s=95&d=&r=PG" class="profile-image" />
-            <!-- ENDIF isLoggedIn -->
-        </div>
-        <form action="{relative_path}/comments/reply" method="post">
-            <textarea id="nodebb-content" class="form-control" name="content" placeholder="[[plugin:addComment]]" rows="3"></textarea>
-        <!-- IF isLoggedIn -->
-            <small>Signed in as <strong>{user.username}</strong>. <strong id="nodebb-error"></strong></small>
-            <button class="btn btn-primary">[[plugin:postReply]]</button>
-            <input type="hidden" name="_csrf" value="{token}" />
-            <input type="hidden" name="tid" value="{tid}" />
-            <input type="hidden" name="url" value="{redirect_url}" />
-        </form>
-        <!-- ELSE -->
-        </form>
-        <button class="btn btn-primary" id="nodebb-register">[[plugin:register]]</button>
-        <button class="btn btn-primary" id="nodebb-login">[[plugin:login]]</button>
-
-        <!-- This button is here just for making the css margin right -->
-        <button style="visibility: hidden; padding-top: 8px;"> </button>
-
-        <!-- ENDIF isLoggedIn -->
-    <!-- ENDIF atBottom -->
-
     <button class="btn btn-primary" <!-- IF !posts.length -->style="display: none"<!-- ENDIF !posts.length --> id="nodebb-load-more">Load more comments...</button>
-<!-- ELSE -->
-    {siteTitle} Commenting has been disabled.
-    <!-- IF isAdmin -->
-    <form action="{relative_path}/comments/publish" method="post">
-        <button class="btn btn-primary">Publish this article to {siteTitle}</button>
-        <input type="hidden" name="markdown" id="nodebb-content-markdown" />
-        <input type="hidden" name="title" id="nodebb-content-title" />
-        <input type="hidden" name="cid" id="nodebb-content-cid" />
-        <input type="hidden" name="blogger" id="nodebb-content-blogger" />
-        <input type="hidden" name="tags" id="nodebb-content-tags" />
-        <input type="hidden" name="id" value="{article_id}" />
-        <input type="hidden" name="url" value="{redirect_url}" />
-        <input type="hidden" name="_csrf" value="{token}" />
-    </form>
-    <!-- ENDIF isAdmin -->
 <!-- ENDIF isValid -->
