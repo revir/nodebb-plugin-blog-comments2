@@ -94,7 +94,7 @@
 				CORSFilter(req, res);
 
 				var posts = data.posts.filter(function(post) {
-					return post.deleted === false;
+					return !post.deleted;
 				});
 				posts.forEach(function(post){
 					post.isReply = post.hasOwnProperty('toPid') && parseInt(post.toPid) !== parseInt(data.tid) - 1;
